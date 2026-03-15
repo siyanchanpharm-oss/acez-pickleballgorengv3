@@ -21,7 +21,7 @@
         .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
         .inline-score-box { border: 2px solid #2196F3; border-radius: 8px; width: 100px; height: 38px; text-align: center; font-weight: 900; color: #d32f2f; font-size: 1.3rem; background: #fff; }
-        .slot { background: #f0f2f5; border: 1px dashed #cbd5e0; border-radius: 8px; padding: 12px 5px; text-align: center; font-size: 0.85rem; min-height: 20px; margin: 5px 0; }
+        .slot { background: #f0f2f5; border: 1px dashed #cbd5e0; border-radius: 8px; padding: 12px 5px; text-align: center; font-size: 0.85rem; min-height: 20px; }
         .slot.selected { background: #e8eaf6; border: 1px solid var(--secondary); color: var(--primary); font-weight: bold; }
         .chip-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
         .chip { background: white; border: 1px solid #ddd; padding: 10px 5px; border-radius: 20px; text-align: center; font-size: 0.8rem; }
@@ -44,7 +44,7 @@
 <div id="confirmModal" class="modal-overlay"><div class="modal"><h3>Save Match?</h3><div id="confirmDetail" style="background:#f8f9fa; padding:15px; margin-bottom:20px; border-radius:8px; text-align:left;"></div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button onclick="closeConfirm()" style="padding:12px; border:none; border-radius:8px; background:#eee;">Cancel</button><button onclick="commitGame()" style="background:var(--success); color:white; padding:12px; border:none; border-radius:8px; font-weight:bold;">Confirm</button></div></div></div>
 
 <div id="view-play" class="view active">
-    <div class="card" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+    <div class="card selection-grid">
         <div><div class="header-row"><h3>Winners</h3><input type="number" id="winScoreInput" value="11" class="inline-score-box"></div><div id="slot-w1" class="slot" onclick="handleSlotClick('w1')">Select</div><div id="slot-w2" class="slot" onclick="handleSlotClick('w2')">Select</div></div>
         <div><div class="header-row"><h3>Losers</h3></div><div id="slot-l1" class="slot" onclick="handleSlotClick('l1')">Select</div><div id="slot-l2" class="slot" onclick="handleSlotClick('l2')">Select</div></div>
     </div>
@@ -52,14 +52,14 @@
     <div class="card"><h3>Select Loser Score (0-11)</h3><div id="scoreGrid" class="score-scroll"></div><div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;"><h3>Deuce Input</h3><div style="display:flex; gap:10px;"><input type="number" id="manualScoreInput" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;"><button onclick="handleManualScore()" style="background:var(--secondary); color:white; border:none; padding:0 20px; border-radius:8px; font-weight:bold;">Add</button></div></div></div>
 </div>
 
-<div id="view-logs" class="view"><div class="card"><h3>Session Log</h3><div id="currentLogList" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div><button onclick="shareWhatsApp()" style="background:#25D366; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;"><i class="fab fa-whatsapp"></i> Share All Results</button></div><div class="card"><h3>Archives</h3><div style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="archiveNameInput" placeholder="Session Name" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;"><button onclick="saveToArchive()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px;">Save</button></div><div id="archiveList"></div></div></div>
+<div id="view-logs" class="view"><div class="card"><h3>Session Log</h3><div id="currentLogList" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div><button onclick="shareWhatsApp()" style="background:#25D366; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;"><i class="fab fa-whatsapp"></i> Share All Scores</button></div><div class="card"><h3>Archives</h3><div style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="archiveNameInput" placeholder="Name" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;"><button onclick="saveToArchive()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px;">Save</button></div><div id="archiveList"></div></div></div>
 
 <div id="view-net" class="view"><div class="card"><h3>Leaderboard</h3><table id="leaderboardTable" style="width:100%;"><thead><tr><th style="text-align:left;">Player</th><th style="text-align:right;">Net RM</th></tr></thead><tbody></tbody></table></div></div>
 
 <div id="view-roster" class="view">
     <div class="card"><h3>Master Roster</h3><div id="masterListCheckboxes"></div><div style="display:flex; gap:10px; margin-top:15px;"><input type="text" id="newPlayerName" placeholder="New Name" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;"><button onclick="addNewPlayer()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px;">Add</button></div></div>
-    <div class="card"><h3>Sync Devices</h3><button onclick="exportData()" style="width:100%; background:var(--secondary); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">EXPORT DATA</button><textarea id="syncBox" placeholder="Paste export code here..."></textarea><button onclick="importData()" style="width:100%; background:var(--success); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">IMPORT DATA</button></div>
-    <div class="card"><button onclick="clearBoard()" style="width:100%; background:#ffebee; color:var(--danger); border:none; padding:15px; border-radius:8px; font-weight:bold;">RESET CURRENT SESSION</button></div>
+    <div class="card"><h3>Sync Data</h3><button onclick="exportData()" style="width:100%; background:var(--secondary); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">EXPORT</button><textarea id="syncBox" placeholder="Paste export code here..."></textarea><button onclick="importData()" style="width:100%; background:var(--success); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">IMPORT</button></div>
+    <div class="card"><h3>Settings</h3><label>Base Bet RM</label><input type="number" id="baseBetInput" onchange="updateRules()" style="width:100%; padding:10px; border:1px solid #ddd; border-radius:8px; margin-top:5px;"><button onclick="clearBoard()" style="width:100%; background:#ffebee; color:var(--danger); border:none; padding:15px; border-radius:8px; font-weight:bold; margin-top:15px;">RESET CURRENT SESSION</button></div>
 </div>
 
 <nav><button class="nav-item active" onclick="switchTab('play')"><i class="fas fa-trophy"></i><span>Play</span></button><button class="nav-item" onclick="switchTab('logs')"><i class="fas fa-folder-open"></i><span>Logs</span></button><button class="nav-item" onclick="switchTab('net')"><i class="fas fa-chart-line"></i><span>Net RM</span></button><button class="nav-item" onclick="switchTab('roster')"><i class="fas fa-users"></i><span>Roster</span></button></nav>
@@ -81,36 +81,31 @@
     function loadArchive(i) { appData.active = JSON.parse(JSON.stringify(appData.archive[i])); save(); switchTab('play'); }
     function deleteArchive(i) { if(confirm("Delete archive?")) { appData.archive.splice(i, 1); save(); } }
     function deleteGame(i) { appData.active.history.splice(i, 1); save(); }
-    function clearBoard() { if(confirm("Reset session?")) { appData.active.history = []; save(); } }
+    function clearBoard() { if(confirm("Reset current session?")) { appData.active.history = []; save(); } }
     function updateRules() { appData.base = parseInt(document.getElementById('baseBetInput').value) || 10; save(); }
     function addNewPlayer() { const n = document.getElementById('newPlayerName').value; if(n) { appData.master.push(n); appData.today.push(n); document.getElementById('newPlayerName').value=''; save(); } }
-    function deleteMasterPlayer(n) { if(confirm(`Delete ${n}?`)) { appData.master = appData.master.filter(p=>p!==n); appData.today = appData.today.filter(p=>p!==n); save(); } }
+    function deleteMasterPlayer(n) { appData.master = appData.master.filter(p=>p!==n); appData.today = appData.today.filter(p=>p!==n); save(); }
     function toggleToday(n) { if(appData.today.includes(n)) appData.today = appData.today.filter(x=>x!==n); else appData.today.push(n); save(); }
     
-    /* UPDATED SHARE LOGIC WITH INDIVIDUAL SCORES */
     function shareWhatsApp() { 
         let s = {}; appData.today.forEach(p=>s[p]={r:0,w:0,l:0});
-        let matchText = `🎾 *Detailed Scores:*\n`;
+        let matchText = `🎾 *Detailed Match List:*\n`;
         appData.active.history.forEach((g, idx) => {
             matchText += `${idx+1}. ${g.w.join('/')} def. ${g.l.join('/')} (${g.score})\n`;
             g.w.forEach(p=>{if(s[p]){s[p].r+=g.payout;s[p].w++;}});
             g.l.forEach(p=>{if(s[p]){s[p].r-=g.payout;s[p].l++;}});
         });
-        
-        let t = `🏆 *Session: ${appData.active.name}*\n\n${matchText}\n📊 *Summary Standings:*\n`;
-        Object.entries(s).sort((a,b)=>b[1].r-a[1].r).forEach(([n,v]) => {
-            t += `${v.r>=0?'🟢':'🔴'} *${n}*: RM ${v.r} (${v.w}W-${v.l}L)\n`;
-        });
+        let t = `🏆 *Session: ${appData.active.name}*\n\n${matchText}\n📊 *Standings Summary:*\n`;
+        Object.entries(s).sort((a,b)=>b[1].r-a[1].r).forEach(([n,v]) => { t += `${v.r>=0?'🟢':'🔴'} *${n}*: RM ${v.r} (${v.w}W-${v.l}L)\n`; });
         window.open(`https://wa.me/?text=${encodeURIComponent(t)}`);
     }
 
-    function exportData() { document.getElementById('syncBox').value = btoa(JSON.stringify(appData)); alert("Copied!"); }
+    function exportData() { document.getElementById('syncBox').value = btoa(JSON.stringify(appData)); alert("Exported!"); }
     function importData() { try { let d = JSON.parse(atob(document.getElementById('syncBox').value)); if(confirm("Overwrite data?")) { appData = d; save(); alert("Imported!"); } } catch(e) { alert("Invalid!"); } }
 
     function render() {
         document.getElementById('sessionNameHeader').innerText = appData.active.name;
         document.getElementById('headerBaseDisplay').innerText = `RM${appData.base} Base`;
-        document.getElementById('baseBetInput').value = appData.base;
         document.getElementById('dateLine').innerText = new Date().toLocaleDateString();
         ['w1','w2','l1','l2'].forEach(s => { const el = document.getElementById('slot-' + s); el.innerText = appData.selections[s] || 'Select'; el.className = 'slot' + (appData.activeSlot === s ? ' selected' : ''); });
         const ac = document.getElementById('activeChips'); ac.innerHTML = ''; appData.today.forEach(p => { ac.innerHTML += `<div class="chip ${Object.values(appData.selections).includes(p)?'active':''}" onclick="selectPlayer('${p}')">${p}</div>`; });
@@ -120,7 +115,7 @@
             if(i===0){c="#f3e5f5";b="#ce93d8";t="#6a1b9a";}else if(i<=3){c="#fff3e0";b="#ffcc80";t="#ef6c00";}else if(i<=6){c="#fffde7";b="#fff59d";t="#f9a825";}
             sg.innerHTML += `<button class="score-btn" style="background:${c};border-color:${b};color:${t};" onclick="openConfirm(${i})"><b>${i}</b><small>RM${appData.base * (i===0?5:(i<=3?3:(i<=6?2:1)))}</small></button>`;
         }
-        const cl = document.getElementById('currentLogList'); cl.innerHTML = ''; appData.active.history.slice().reverse().forEach((g, i) => { cl.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;font-size:0.8rem;"><span><b>${g.w.join('/')}</b> vs ${g.l.join('/')} (${g.score}) - RM${g.payout}</span><button onclick="deleteGame(${appData.active.history.length-1-i})" style="color:var(--danger);border:none;background:none;"><i class="fas fa-trash"></i></button></div>`; });
+        const cl = document.getElementById('currentLogList'); cl.innerHTML = ''; appData.active.history.slice().reverse().forEach((g, i) => { cl.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;font-size:0.8rem;"><span><b>${g.w.join('/')}</b> def. ${g.l.join('/')} (${g.score})</span><button onclick="deleteGame(${appData.active.history.length-1-i})" style="color:var(--danger);border:none;background:none;"><i class="fas fa-trash"></i></button></div>`; });
         const lb = document.querySelector('#leaderboardTable tbody'); lb.innerHTML = ''; let st = {}; appData.today.forEach(p=>st[p]={r:0,w:0,l:0});
         appData.active.history.forEach(g=>{ g.w.forEach(p=>{if(st[p]){st[p].r+=g.payout;st[p].w++;}}); g.l.forEach(p=>{if(st[p]){st[p].r-=g.payout;st[p].l++;}}); });
         Object.entries(st).sort((a,b)=>b[1].r-a[1].r).forEach(([n,v]) => { lb.innerHTML += `<tr><td style="padding:10px;border-bottom:1px solid #eee;">${n} <span class="win-badge">${v.w}W-${v.l}L</span></td><td style="text-align:right;font-weight:bold;color:${v.r>=0?'var(--success)':'var(--danger)'}">RM ${v.r.toFixed(2)}</td></tr>`; });
