@@ -262,4 +262,28 @@
         for(let i=0; i<=11; i++) {
             let c = "#fff", b = "#ddd", t = "#444";
             if(i===0){c="#f3e5f5";b="#ce93d8";t="#6a1b9a";}else if(i<=3){c="#fff3e0";b="#ffcc80";t="#ef6c00";}else if(i<=6){c="#fffde7";b="#fff59d";t="#f9a825";}
-            sg.innerHTML += `<button class="score-btn"
+            sg.innerHTML += `<button class="score-btn" style="background:${c};border-color:${b};color:${t};" onclick="openConfirm(${i})"><b>${i}</b><small>RM${appData.base * (i===0?5:(i<=3?3:(i<=6?2:1)))}</small></button>`;
+        }
+        
+        const cl = document.getElementById('currentLogList'); cl.innerHTML = ''; 
+        appData.active.history.slice().reverse().forEach((g, i) => { 
+            const realIdx = appData.active.history.length-1-i;
+            cl.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;font-size:0.8rem;"><span><b>${g.w.join('/')}</b> vs ${g.l.join('/')} (${g.score})</span><button onclick="deleteGame(${realIdx})" style="color:var(--danger);border:none;background:none;padding:5px;"><i class="fas fa-trash"></i></button></div>`; 
+        });
+        
+        const lb = document.querySelector('#leaderboardTable tbody'); lb.innerHTML = ''; let st = getStats();
+        Object.entries(st).sort((a,b)=>b[1].r-a[1].r).forEach(([n,v]) => { lb.innerHTML += `<tr><td style="padding:10px;border-bottom:1px solid #eee;">${n} <span class="win-badge">${v.w}W-${v.l}L</span></td><td style="text-align:right;font-weight:bold;color:${v.r>=0?'var(--success)':'var(--danger)'}">RM ${v.r.toFixed(2)}</td></tr>`; });
+        
+        const al = document.getElementById('archiveList'); al.innerHTML = ''; 
+        appData.archive.slice().reverse().forEach((s, i) => { 
+            const realIdx = appData.archive.length-1-i;
+            al.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;"><span>${s.name}</span><div><button onclick="loadArchive(${realIdx})" style="background:var(--secondary);color:white;border:none;padding:5px 10px;border-radius:4px;font-size:0.7rem;cursor:pointer;">Load</button><button onclick="deleteArchive(${realIdx})" style="color:var(--danger);border:none;background:none;margin-left:10px;cursor:pointer;"><i class="fas fa-trash"></i></button></div></div>`; 
+        });
+        
+        const mc = document.getElementById('masterListCheckboxes'); mc.innerHTML = ''; 
+        appData.master.forEach(p => { mc.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;"><span>${p}</span><div><button onclick="deleteMasterPlayer('${p}')" style="color:#ccc;border:none;background:none;margin-right:15px;cursor:pointer;"><i class="fas fa-trash-alt"></i></button><button onclick="toggleToday('${p}')" style="background:${appData.today.includes(p)?'#28a745':'#eee'};border:none;color:white;width:28px;height:28px;border-radius:50%;cursor:pointer;">${appData.today.includes(p)?'✓':''}</button></div></div>`; });
+    }
+    render();
+</script>
+</body>
+</html>
