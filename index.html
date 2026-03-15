@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a237e">
+    <title>Acez PB Goreng</title>
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/2075/2075253.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #1a237e; --secondary: #3949ab; --danger: #dc3545; --success: #28a745; --bg: #f8f9fa; }
+        body { font-family: -apple-system, sans-serif; margin: 0; background: var(--bg); padding-bottom: 100px; -webkit-tap-highlight-color: transparent; }
+        header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .base-indicator { background: var(--secondary); padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: bold; }
+        nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; border-top: 1px solid #eee; height: 75px; z-index: 1000; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #999; border: none; background: none; font-size: 0.7rem; }
+        .nav-item.active { color: var(--primary); font-weight: bold; }
+        .view { display: none; padding: 15px; }
+        .view.active { display: block; }
+        .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .inline-score-box { border: 2px solid #2196F3; border-radius: 8px; width: 100px; height: 38px; text-align: center; font-weight: 900; color: #d32f2f; font-size: 1.3rem; background: #fff; }
+        .slot { background: #f0f2f5; border: 1px dashed #cbd5e0; border-radius: 8px; padding: 12px 5px; text-align: center; font-size: 0.85rem; min-height: 20px; margin: 5px 0; }
+        .slot.selected { background: #e8eaf6; border: 1px solid var(--secondary); color: var(--primary); font-weight: bold; }
+        .chip-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0; }
+        .chip { background: white; border: 1px solid #ddd; padding: 10px 5px; border-radius: 20px; text-align: center; font-size: 0.8rem; }
+        .chip.active { background: var(--secondary); color: white; border-color: var(--secondary); }
+        .score-scroll { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .score-btn { border: 1px solid #ddd; border-radius: 10px; padding: 12px 0; display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+        .win-badge { background: #e8f5e9; color: #2e7d32; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.7rem; margin-left: 5px; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 3000; align-items: center; justify-content: center; }
+        .modal { background: white; width: 85%; border-radius: 16px; padding: 20px; text-align: center; }
+        textarea { width: 100%; height: 60px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; padding: 5px; font-size: 0.7rem; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div><h2 id="sessionNameHeader" style="margin:0; font-size: 0.9rem;">Acez PB Goreng</h2><div id="dateLine" style="font-size: 0.7rem; opacity: 0.8;"></div></div>
+    <div id="headerBaseDisplay" class="base-indicator">RM10 Base</div>
+</header>
+
+<div id="confirmModal" class="modal-overlay"><div class="modal"><h3>Save Match?</h3><div id="confirmDetail" style="background:#f8f9fa; padding:15px; margin-bottom:20px; border-radius:8px; text-align:left;"></div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button onclick="closeConfirm()" style="padding:12px; border:none; border-radius:8px; background:#eee;">Cancel</button><button onclick="commitGame()" style="background:var(--success); color:white; padding:12px; border:none; border-radius:8px; font-weight:bold;">Confirm</button></div></div></div>
+
+<div id="view-play" class="view active">
+    <div class="card" style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div><div class="header-row"><h3>Winners</h3><input type="number" id="winScoreInput" value="11" class="inline-score-box"></div><div id="slot-w1" class="slot" onclick="handleSlotClick('w1')">Select</div><div id="slot-w2" class="slot" onclick="handleSlotClick('w2')">Select</div></div>
+        <div><div class="header-row"><h3>Losers</h3></div><div id="slot-l1" class="slot" onclick="handleSlotClick('l1')">Select</div><div id="slot-l2" class="slot" onclick="handleSlotClick('l2')">Select</div></div>
+    </div>
+    <div id="activeChips" class="chip-container"></div>
+    <div class="card"><h3>Select Loser Score (0-11)</h3><div id="scoreGrid" class="score-scroll"></div><div style="margin-top:15px; border-top:1px solid #eee; padding-top:15px;"><h3>Deuce Input</h3><div style="display:flex; gap:10px;"><input type="number" id="manualScoreInput" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;"><button onclick="handleManualScore()" style="background:var(--secondary); color:white; border:none; padding:0 20px; border-radius:8px; font-weight:bold;">Add</button></div></div></div>
+</div>
+
+<div id="view-logs" class="view"><div class="card"><h3>Session Log</h3><div id="currentLogList" style="max-height:200px; overflow-y:auto; margin-bottom:10px;"></div><button onclick="shareWhatsApp()" style="background:#25D366; color:white; border:none; padding:12px; border-radius:8px; width:100%; font-weight:bold;"><i class="fab fa-whatsapp"></i> Share All Results</button></div><div class="card"><h3>Archives</h3><div style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="archiveNameInput" placeholder="Session Name" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;"><button onclick="saveToArchive()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px;">Save</button></div><div id="archiveList"></div></div></div>
+
+<div id="view-net" class="view"><div class="card"><h3>Leaderboard</h3><table id="leaderboardTable" style="width:100%;"><thead><tr><th style="text-align:left;">Player</th><th style="text-align:right;">Net RM</th></tr></thead><tbody></tbody></table></div></div>
+
+<div id="view-roster" class="view">
+    <div class="card"><h3>Master Roster</h3><div id="masterListCheckboxes"></div><div style="display:flex; gap:10px; margin-top:15px;"><input type="text" id="newPlayerName" placeholder="New Name" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;"><button onclick="addNewPlayer()" style="background:var(--primary); color:white; border:none; padding:10px; border-radius:8px;">Add</button></div></div>
+    <div class="card"><h3>Sync Devices</h3><button onclick="exportData()" style="width:100%; background:var(--secondary); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">EXPORT DATA</button><textarea id="syncBox" placeholder="Paste export code here..."></textarea><button onclick="importData()" style="width:100%; background:var(--success); color:white; border:none; padding:10px; border-radius:8px; font-weight:bold;">IMPORT DATA</button></div>
+    <div class="card"><button onclick="clearBoard()" style="width:100%; background:#ffebee; color:var(--danger); border:none; padding:15px; border-radius:8px; font-weight:bold;">RESET CURRENT SESSION</button></div>
+</div>
+
+<nav><button class="nav-item active" onclick="switchTab('play')"><i class="fas fa-trophy"></i><span>Play</span></button><button class="nav-item" onclick="switchTab('logs')"><i class="fas fa-folder-open"></i><span>Logs</span></button><button class="nav-item" onclick="switchTab('net')"><i class="fas fa-chart-line"></i><span>Net RM</span></button><button class="nav-item" onclick="switchTab('roster')"><i class="fas fa-users"></i><span>Roster</span></button></nav>
+
+<script>
+    const VERSION = 'acez_sync_stable_v1';
+    let appData = JSON.parse(localStorage.getItem(VERSION)) || { master: ["Acez"], today: ["Acez"], base: 10, active: { name: "New Session", history: [] }, archive: [], selections: { w1: null, w2: null, l1: null, l2: null }, activeSlot: 'w1' };
+    let pendingGame = null;
+
+    function save() { localStorage.setItem(VERSION, JSON.stringify(appData)); render(); }
+    function switchTab(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); document.getElementById('view-' + id).classList.add('active'); event.currentTarget.classList.add('active'); }
+    function handleSlotClick(s) { appData.activeSlot = s; save(); }
+    function selectPlayer(name) { for(let k in appData.selections) if(appData.selections[k] === name) appData.selections[k] = null; appData.selections[appData.activeSlot] = name; const seq = {w1:'w2', w2:'l1', l1:'l2', l2:'w1'}; appData.activeSlot = seq[appData.activeSlot]; save(); }
+    function openConfirm(score) { if(!appData.selections.w1 || !appData.selections.l1) return alert("Select Players!"); const winS = document.getElementById('winScoreInput').value; const mult = score === 0 ? 5 : (score <= 3 ? 3 : (score <= 6 ? 2 : 1)); pendingGame = { w: [appData.selections.w1, appData.selections.w2].filter(x=>x), l: [appData.selections.l1, appData.selections.l2].filter(x=>x), score: `${winS}-${score}`, payout: appData.base * mult }; document.getElementById('confirmDetail').innerHTML = `<b>Winners:</b> ${pendingGame.w.join('/')} (${winS})<br><b>Losers:</b> ${pendingGame.l.join('/')} (${score})<br><b>Payout:</b> RM ${pendingGame.payout}`; document.getElementById('confirmModal').style.display = 'flex'; }
+    function handleManualScore() { const val = parseInt(document.getElementById('manualScoreInput').value); if(!isNaN(val)) { openConfirm(val); document.getElementById('manualScoreInput').value = ''; } }
+    function commitGame() { appData.active.history.push(pendingGame); appData.selections = { w1: null, w2: null, l1: null, l2: null }; appData.activeSlot = 'w1'; closeConfirm(); save(); }
+    function closeConfirm() { document.getElementById('confirmModal').style.display = 'none'; }
+    function saveToArchive() { const n = document.getElementById('archiveNameInput').value; if(n) { appData.active.name = n; appData.active.date = new Date().toLocaleDateString(); appData.archive.push(JSON.parse(JSON.stringify(appData.active))); document.getElementById('archiveNameInput').value = ''; alert("Archived!"); save(); } }
+    function loadArchive(i) { appData.active = JSON.parse(JSON.stringify(appData.archive[i])); save(); switchTab('play'); }
+    function deleteArchive(i) { if(confirm("Delete archive?")) { appData.archive.splice(i, 1); save(); } }
+    function deleteGame(i) { appData.active.history.splice(i, 1); save(); }
+    function clearBoard() { if(confirm("Reset session?")) { appData.active.history = []; save(); } }
+    function updateRules() { appData.base = parseInt(document.getElementById('baseBetInput').value) || 10; save(); }
+    function addNewPlayer() { const n = document.getElementById('newPlayerName').value; if(n) { appData.master.push(n); appData.today.push(n); document.getElementById('newPlayerName').value=''; save(); } }
+    function deleteMasterPlayer(n) { if(confirm(`Delete ${n}?`)) { appData.master = appData.master.filter(p=>p!==n); appData.today = appData.today.filter(p=>p!==n); save(); } }
+    function toggleToday(n) { if(appData.today.includes(n)) appData.today = appData.today.filter(x=>x!==n); else appData.today.push(n); save(); }
+    
+    /* UPDATED SHARE LOGIC WITH INDIVIDUAL SCORES */
+    function shareWhatsApp() { 
+        let s = {}; appData.today.forEach(p=>s[p]={r:0,w:0,l:0});
+        let matchText = `🎾 *Detailed Scores:*\n`;
+        appData.active.history.forEach((g, idx) => {
+            matchText += `${idx+1}. ${g.w.join('/')} def. ${g.l.join('/')} (${g.score})\n`;
+            g.w.forEach(p=>{if(s[p]){s[p].r+=g.payout;s[p].w++;}});
+            g.l.forEach(p=>{if(s[p]){s[p].r-=g.payout;s[p].l++;}});
+        });
+        
+        let t = `🏆 *Session: ${appData.active.name}*\n\n${matchText}\n📊 *Summary Standings:*\n`;
+        Object.entries(s).sort((a,b)=>b[1].r-a[1].r).forEach(([n,v]) => {
+            t += `${v.r>=0?'🟢':'🔴'} *${n}*: RM ${v.r} (${v.w}W-${v.l}L)\n`;
+        });
+        window.open(`https://wa.me/?text=${encodeURIComponent(t)}`);
+    }
+
+    function exportData() { document.getElementById('syncBox').value = btoa(JSON.stringify(appData)); alert("Copied!"); }
+    function importData() { try { let d = JSON.parse(atob(document.getElementById('syncBox').value)); if(confirm("Overwrite data?")) { appData = d; save(); alert("Imported!"); } } catch(e) { alert("Invalid!"); } }
+
+    function render() {
+        document.getElementById('sessionNameHeader').innerText = appData.active.name;
+        document.getElementById('headerBaseDisplay').innerText = `RM${appData.base} Base`;
+        document.getElementById('baseBetInput').value = appData.base;
+        document.getElementById('dateLine').innerText = new Date().toLocaleDateString();
+        ['w1','w2','l1','l2'].forEach(s => { const el = document.getElementById('slot-' + s); el.innerText = appData.selections[s] || 'Select'; el.className = 'slot' + (appData.activeSlot === s ? ' selected' : ''); });
+        const ac = document.getElementById('activeChips'); ac.innerHTML = ''; appData.today.forEach(p => { ac.innerHTML += `<div class="chip ${Object.values(appData.selections).includes(p)?'active':''}" onclick="selectPlayer('${p}')">${p}</div>`; });
+        const sg = document.getElementById('scoreGrid'); sg.innerHTML = '';
+        for(let i=0; i<=11; i++) {
+            let c = "#fff", b = "#ddd", t = "#444";
+            if(i===0){c="#f3e5f5";b="#ce93d8";t="#6a1b9a";}else if(i<=3){c="#fff3e0";b="#ffcc80";t="#ef6c00";}else if(i<=6){c="#fffde7";b="#fff59d";t="#f9a825";}
+            sg.innerHTML += `<button class="score-btn" style="background:${c};border-color:${b};color:${t};" onclick="openConfirm(${i})"><b>${i}</b><small>RM${appData.base * (i===0?5:(i<=3?3:(i<=6?2:1)))}</small></button>`;
+        }
+        const cl = document.getElementById('currentLogList'); cl.innerHTML = ''; appData.active.history.slice().reverse().forEach((g, i) => { cl.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;font-size:0.8rem;"><span><b>${g.w.join('/')}</b> vs ${g.l.join('/')} (${g.score}) - RM${g.payout}</span><button onclick="deleteGame(${appData.active.history.length-1-i})" style="color:var(--danger);border:none;background:none;"><i class="fas fa-trash"></i></button></div>`; });
+        const lb = document.querySelector('#leaderboardTable tbody'); lb.innerHTML = ''; let st = {}; appData.today.forEach(p=>st[p]={r:0,w:0,l:0});
+        appData.active.history.forEach(g=>{ g.w.forEach(p=>{if(st[p]){st[p].r+=g.payout;st[p].w++;}}); g.l.forEach(p=>{if(st[p]){st[p].r-=g.payout;st[p].l++;}}); });
+        Object.entries(st).sort((a,b)=>b[1].r-a[1].r).forEach(([n,v]) => { lb.innerHTML += `<tr><td style="padding:10px;border-bottom:1px solid #eee;">${n} <span class="win-badge">${v.w}W-${v.l}L</span></td><td style="text-align:right;font-weight:bold;color:${v.r>=0?'var(--success)':'var(--danger)'}">RM ${v.r.toFixed(2)}</td></tr>`; });
+        const al = document.getElementById('archiveList'); al.innerHTML = ''; appData.archive.slice().reverse().forEach((s, i) => { al.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;"><span>${s.name} (${s.date})</span><div><button onclick="loadArchive(${appData.archive.length-1-i})" style="background:var(--secondary);color:white;border:none;padding:5px 10px;border-radius:4px;font-size:0.7rem;">Load</button><button onclick="deleteArchive(${appData.archive.length-1-i})" style="color:var(--danger);border:none;background:none;margin-left:10px;"><i class="fas fa-trash"></i></button></div></div>`; });
+        const mc = document.getElementById('masterListCheckboxes'); mc.innerHTML = ''; appData.master.forEach(p => { mc.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #eee;"><span>${p}</span><div><button onclick="deleteMasterPlayer('${p}')" style="color:#ccc;border:none;background:none;margin-right:15px;"><i class="fas fa-trash-alt"></i></button><button onclick="toggleToday('${p}')" style="background:${appData.today.includes(p)?'#28a745':'#eee'};border:none;color:white;width:28px;height:28px;border-radius:50%;">${appData.today.includes(p)?'✓':''}</button></div></div>`; });
+    }
+    render();
+</script>
+</body>
+</html>
